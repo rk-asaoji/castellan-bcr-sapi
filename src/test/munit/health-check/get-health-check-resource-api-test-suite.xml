@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="get-health-check-resource-api-test-suite.xml" />
+
+	<http:request-config name="Munit_HealthCheck_HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="a6104a46-ca35-4e3c-95a0-9d8e920356f3" >
+		<http:request-connection host="localhost" port="8082" protocol="HTTPS">
+			<tls:context >
+				<tls:trust-store insecure="true" />
+			</tls:context>
+		</http:request-connection>
+	</http:request-config>
+
+	<munit:test name="api-specification-template-get-main-test-suite-api-specification-template-main-test" doc:id="4955d5b1-1fd3-4089-8f63-969bf003930e">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="47cbb997-bbb6-4210-b66b-a000848eade3" processor="flow">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute whereValue="validate-back-end-service-flow" attributeName="name" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="977c3301-98d2-45b5-be36-b40da267a2c3" processor="set-variable">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute whereValue="currentTime" attributeName="variableName" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return>
+					<munit-tools:variables>
+						<munit-tools:variable key="currentTime" value="#[output application/java --- '2022-01-18T21:03:45.695Z']" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<http:request method="GET" doc:name="Request" doc:id="0f88b16d-7565-45d7-b7dc-a2dba0a5ed44" config-ref="Munit_HealthCheck_HTTP_Request_configuration" path="/${secure::api.path}/health">
+				<http:headers><![CDATA[#[output application/java
+---
+{
+	"client_secret" : "def",
+	"X-Correlation-ID" : "b616f989-a976-4a89-9af3-8e2739c6d739",
+	"Content-Type" : "application/json",
+	"client_id" : "abc"
+}]]]></http:headers>
+			</http:request>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="c4063495-e0e5-4299-8d47-e1599fad6242" expression="#[payload]" is="#[MunitTools::notNullValue()]" />
+			<munit-tools:assert-that doc:name="Assert Transformed Payload equals Expected From File" doc:id="aeb7d94d-9346-4cf3-9af2-4ff68b46f232" expression="#[payload]" is="#[MunitTools::equalTo(readUrl('classpath://sample_data/health_check/GetResponseSuccessOutput.json'))]" message="Output payload did not match" />
+			<munit-tools:assert-that doc:name="Assert that Status Code equals 200" doc:id="62d5a976-60eb-4027-945a-9e6f2b0648e8" expression="#[attributes.statusCode]" is="#[MunitTools::equalTo(200)]" message="Invalid HTTP status code" />
+		</munit:validation>	
+	</munit:test>
+
+
+</mule>

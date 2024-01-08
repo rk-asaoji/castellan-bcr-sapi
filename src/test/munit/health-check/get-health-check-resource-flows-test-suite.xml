@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="get-health-check-resource-flows-test-suite.xml" />
+
+	<munit:test name="get-health-check-test-suite-get-health-check-flow-test" doc:id="654ea3ab-28dc-424c-8257-832046cdf710" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="5e4da89f-35cd-46a7-b6e9-32104f4da3df" processor="set-variable">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="currentTime" attributeName="variableName" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:variables >
+						<munit-tools:variable key="currentTime" value="#[output application/java --- '2022-01-18T21:03:45.695Z']" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when Pass Flow" doc:id="e9f88f70-76e1-4ef5-9106-4ff282f099a9" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Flow Reference" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="001a72ba-b7cf-4c7f-a853-a86698707823" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="pass-check-only-for-demo" attributeName="name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[readUrl('classpath://sample_data/health_check/GetResponseSuccessOutput.json')]" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when Fail Flow" doc:id="5d17cb3a-8005-403f-8df4-4b2fd607a662" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Flow Reference" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="64a77715-ffa4-416d-b01b-6133b5605355" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="fail-check-only-for-demo" attributeName="name" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to get-health-check-flow" doc:id="e747b82a-dbb3-48e2-a0db-e8f7b58a050d" name="get-health-check-flow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that Payload Response is Valid" doc:id="27764282-b6d5-43f4-9f3a-341ef1795ac3" expression="#[payload]" is="#[MunitTools::equalTo(readUrl('classpath://sample_data/health_check/GetResponseSuccessOutput.json'))]" message="Output payload does not match expected result"/>
+			<munit-tools:verify-call doc:name="Verify call" doc:id="1f093c9c-2b49-45f3-b09d-5d9827e24ac5" processor="json-logger:logger" atLeast="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Log Before API/Backend Call" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="ea9313e0-7000-43cd-8299-5be9a4247b8b" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="JSON_Logger_Config" attributeName="config-ref" />
+					<munit-tools:with-attribute whereValue="Before request to validate dependency health " attributeName="message" />
+					<munit-tools:with-attribute whereValue="BEFORE_REQUEST" attributeName="tracePoint" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:verify-call doc:name="Verify call" doc:id="9f812314-a63b-4f2c-8382-6627436223b3" processor="json-logger:logger" atLeast="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Log After API/Backend Call" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="618ddc5c-4ade-4a66-b300-6b629b9312f7" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="JSON_Logger_Config" attributeName="config-ref" />
+					<munit-tools:with-attribute whereValue="After request to validate dependency health " attributeName="message" />
+					<munit-tools:with-attribute whereValue="AFTER_REQUEST" attributeName="tracePoint" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="get-health-check-test-suite-get-health-check-flow-fail-test" doc:id="049c8496-a0ea-4757-b4af-0a77a971ae57" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when Current Time" doc:id="b913e0c1-474a-43e7-9c9f-a0c8317bc902" processor="set-variable">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="currentTime" attributeName="variableName" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return>
+					<munit-tools:variables>
+						<munit-tools:variable key="currentTime" value="#[output application/java --- '2022-01-18T21:03:45.695Z']" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock Validate Back End serviceFlow" doc:id="5562c07a-d1bf-49c3-8022-cf9d4565af47" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Validate Backend Service Flow" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="dc78688f-9cf0-4513-88ea-6e948fb5ffa4" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="validate-back-end-service-flow" attributeName="name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="HEALTH:ERROR" />
+				</munit-tools:then-return>
+
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to get-health-check-flow" doc:id="2c4e3325-0fac-4b31-9d97-f9245e464283" name="get-health-check-flow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that Payload Error Response is Valid" doc:id="92d323e3-8ea4-4bb5-b0d1-db5d59414ba9" expression="#[payload]" is="#[MunitTools::equalTo(readUrl('classpath://sample_data/health_check/GetResponseFailureOutput.json'))]" message="Output payload does not match expected result"/>
+			<munit-tools:verify-call doc:name="Verify call" doc:id="c4149652-877b-4041-904a-09eb2af2c3bf" processor="json-logger:logger" atLeast="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Log Exception" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="d7b136b6-cf42-4e33-9eb2-252d47212c65" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="JSON_Logger_Config" attributeName="config-ref" />
+					<munit-tools:with-attribute whereValue="ERROR" attributeName="priority" />
+					<munit-tools:with-attribute whereValue="EXCEPTION" attributeName="tracePoint" />
+					<munit-tools:with-attribute whereValue="An error has occured" attributeName="message" />
+				</munit-tools:with-attributes>
+
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+
+	<munit:test name="get-health-check-test-suite-validate-back-end-service-flow-test" doc:id="d1963895-3285-4984-aac3-7773ac6a06f1" description="Test" expectedErrorType="HEALTH:ERROR">
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to validate-back-end-service-flow" doc:id="146a0b59-97f1-4353-84a6-15e00480bd61" name="validate-back-end-service-flow"/>
+			<flow-ref doc:name="Flow-ref to validate-back-end-service-flow" doc:id="6c09f669-1a55-4a12-a0a0-1c30de03186f" name="validate-back-end-service-flow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Verify call" doc:id="9dc4e7ef-fd25-4edc-977a-30ec878c827e" processor="flow-ref" atLeast="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="pass-check-only-for-demo" attributeName="name" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:verify-call doc:name="Verify call" doc:id="4979f986-2902-42ef-ab20-3a88a21abacf" processor="flow-ref" atLeast="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="fail-check-only-for-demo" attributeName="name" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	
+</munit:test>
+
+</mule>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:module-error-handler-plugin="http://www.mulesoft.org/schema/mule/module-error-handler-plugin"
+	xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/module-error-handler-plugin http://www.mulesoft.org/schema/mule/module-error-handler-plugin/current/mule-module-error-handler-plugin.xsd">
+    <flow name="get-health-check-flow" doc:id="335e0b1f-b86c-4a1b-b9e4-a3804e304c52">
+
+		<!-- Insert the call to validate that dependent resources are available. e.g. database, downstream api  -->        
+        <!-- if an error occurs generate an error response -->
+		<set-variable value="#[now()]" doc:name="Set Variable to Current Time" doc:id="ff981152-dff2-4d74-858c-bcb5178fe649" variableName="currentTime" />
+		<flow-ref doc:name="Validate Backend Service Flow" doc:id="dc78688f-9cf0-4513-88ea-6e948fb5ffa4" name="validate-back-end-service-flow"/>
+		<error-handler>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="06e030f0-ae63-4129-8b86-1c0908dacd1c" >
+				<ee:transform doc:name="Create Failed Health Check Response" doc:id="83bfaa44-81b8-46ba-8c48-b0c0230f42e4" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+					<ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  "health": {
+    "name": p('secure::api.name'),
+    "apiVersion": p('secure::api.version'),
+    "status": "up",
+    "timestamp": vars.currentTime,
+    "dependencies": [
+      {
+        "name": "db-configuration-sapi",
+        "status": "down",
+        "message": error.description
+      }
+    ]
+  }
+}]]></ee:set-payload>
+
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="httpStatus"><![CDATA[%dw 2.0
+output application/java
+---
+500]]></ee:set-variable>
+					</ee:variables>
+				
+</ee:transform>
+			</on-error-continue>
+		
+</error-handler>        
+        
+    </flow>
+	<flow name="validate-back-end-service-flow" doc:id="f7561371-3e89-49a3-981a-d1ff0b07ad46">
+
+		<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:name="Transform Message Create Success Payload Health Check Response">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  "health": {
+    "name": p('secure::api.name'),
+    "apiVersion": p('secure::api.version'),
+    "status": "up",
+    "timestamp": vars.currentTime,
+    "dependencies": [
+      {
+        "name": "db-configuration-sapi",
+        "status": "up", 
+        "message": ""
+      }
+    ]
+  }
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+	</flow>
+
+</mule>

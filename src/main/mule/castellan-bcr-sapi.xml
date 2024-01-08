@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd ">
+    <flow name="castellan-bcr-sapi-main">
+        <http:listener config-ref="HTTPS_Listener_Config" path="/${secure::api.path}/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="castellan-bcr-sapi-config" />
+        <error-handler>
+            <on-error-propagate enableNotifications="true" logException="true">
+				<flow-ref doc:name="error-handler-subflow" doc:id="9db49b8f-379a-4dff-a637-2f38200ee896" name="error-handler-subflow"/>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <sub-flow name="error-handler-subflow" doc:id="4de358f3-ba67-4c90-b1c7-65127e88a8f3" doc:description="This flow can be re-used across different flows to create an error payload and log an exception">
+		<set-variable value="#[attributes.httpStatus]" doc:name="httpStatus" doc:id="3e859be3-9aaf-48b6-a218-6a0243dec6d6" variableName="httpStatus" />
+	</sub-flow>
+	<flow name="get:\health:castellan-bcr-sapi-config">
+		<flow-ref doc:name="health check flow" doc:id="9864111d-7514-415b-9a8d-1bbd2fe6458d" name="get-health-check-flow"/>
+    </flow>
+</mule>

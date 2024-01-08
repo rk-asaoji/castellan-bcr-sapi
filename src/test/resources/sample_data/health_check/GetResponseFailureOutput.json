@@ -1,0 +1,15 @@
+{
+    "health": {
+        "name": "sapi-template",
+        "apiVersion": "v1.0",
+        "status": "unknown",
+        "timestamp": "2022-01-18T21:03:45.695Z",
+        "dependencies": [
+            {
+                "name": "mysql-database",
+                "status": "down",
+                "message": ""
+            }
+        ]
+    }
+}

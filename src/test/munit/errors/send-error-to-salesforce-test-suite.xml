@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:module-error-handler-plugin="http://www.mulesoft.org/schema/mule/module-error-handler-plugin"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
+	xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
+http://www.mulesoft.org/schema/mule/module-error-handler-plugin http://www.mulesoft.org/schema/mule/module-error-handler-plugin/current/mule-module-error-handler-plugin.xsd">
+	<munit:config name="send-error-to-salesforce-test-suite.xml" />
+	<munit:test name="send-error-to-salesforce-test-suite-error-handler-subflow-test" doc:id="93379c25-6787-4581-bbcc-bf64f6e9728f" description="Test">
+		<munit:execution >
+			<module-error-handler-plugin:send-error-to-salesforce doc:name="Send Error to Salesforce" doc:id="942525bc-609a-474c-ae76-78b830bc33db" config-ref="Error_Handler_Plugin_Config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="e3fd30f7-bcb7-4d8c-a4ab-5d96d9cb1964" message="Invalid value returned" is="#[MunitTools::nullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="send-error-to-salesforce-true-test-suite-error-handler-subflow-test" doc:id="3c1639e8-39cf-47b9-9880-c064b73db787" description="Test">
+		<munit:execution >
+			<module-error-handler-plugin:send-error-to-salesforce doc:name="Send Error to Salesforce" doc:id="8c2f369d-c23f-4bd3-913a-266c26bead6a" config-ref="Error_Handler_Plugin_Config" sendToSalesforceErrorLog="true" keyRecordId="123"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="c1abf921-264b-414d-ae53-5ff697d0c9eb" message="Invalid value returned" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+</mule>

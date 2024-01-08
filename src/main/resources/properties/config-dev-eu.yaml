@@ -1,0 +1,24 @@
+#Autodiscovery API ID
+api:
+  autodiscovery.id: "19215725"
+  name: "castellan-bcr-sapi"
+  version: "v1.0"
+  path: "api/${secure::api.version}"
+  
+https:
+  listener:
+    host: "0.0.0.0"
+    port: "8082"
+    keystore:
+      file: "ssl/identity.p12"
+      alias: "selfsigned"
+      password: "![jFWIClseNCQsJbB8IKY4gQ==]"
+      key.password: "![jFWIClseNCQsJbB8IKY4gQ==]"
+    trustore:
+      file: ""
+      alias: ""
+      password: ""
+  request:
+    timeout:
+      connection-idle: "500000"
+      response: "5000"  
