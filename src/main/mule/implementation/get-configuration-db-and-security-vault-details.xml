@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:module-error-handler-plugin="http://www.mulesoft.org/schema/mule/module-error-handler-plugin" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/module-error-handler-plugin http://www.mulesoft.org/schema/mule/module-error-handler-plugin/current/mule-module-error-handler-plugin.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<flow name="get-configuration-db-and-security-vault-details-flow" doc:id="335e0b1f-b86c-4a1b-b9e4-a3804e304c52">
+		<logger level="INFO" doc:name="Log Flow Start" doc:id="655fc396-c3ab-4bb6-8f06-400828491307" message='#[flow.name ++ " started."]'/>
+		<set-variable value="#[attributes.Headers.subscriptionId]" doc:name="Subscription Id" doc:id="dd89611d-cafd-4143-b075-83d5d8866867" variableName="subscriptionId"/>
+		<http:request method="GET" doc:name="Call ConfigDB; Get Target Details" doc:id="90f4b80e-b614-4046-ac39-d35564f5d914" config-ref="HTTPS_DB_Configuration_Sapi" path="/target" target="targetResponse">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"client_id" : Mule::p('secure::db.configuration.sapi.client.id'),
+	"client_secret": Mule::p('secure::db.configuration.sapi.client.secret')
+}]]]></http:headers>
+			<http:query-params><![CDATA[#[output application/json
+---
+{
+	"subscriptionIdList" : vars.subscriptionId
+}]]]></http:query-params>
+		</http:request>
+		<logger level="INFO" doc:name="Log Target Response" doc:id="1aba1e8d-5c07-4ada-b0fe-417fa053df66" message="Target Response : #[vars.targetResponse]"/>
+		<http:request method="GET" doc:name="Call ConfigDB; Get Castellan Details" doc:id="234d921b-b23e-41da-a9b6-3788971b20a9" config-ref="HTTPS_DB_Configuration_Sapi" path="/castellanDetail" target="castellanResponse">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"client_id" : Mule::p('secure::db.configuration.sapi.client.id'),
+	"client_secret": Mule::p('secure::db.configuration.sapi.client.secret')
+}]]]></http:headers>
+			<http:query-params><![CDATA[#[output application/json
+---
+{
+	"targetId" : vars.targetResponse.Targets.*Id[0]
+}]]]></http:query-params>
+		</http:request>
+		<logger level="INFO" doc:name="Log Castellan Response" doc:id="f7062988-2b16-4cb7-a54a-be19fe5395e7" message="Castellan Response : #[vars.castellanResponse]" />
+		<http:request method="GET" doc:name="Request Security Vault Details" doc:id="dd1be56b-f26b-4174-9368-b66efc4852c4" config-ref="HTTPS_Security_Vault_Sapi" path="/securityVault" target="securityVaultResponse">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_id" : Mule::p('secure::security.vault.sapi.client.id'),
+	"client_secret": Mule::p('secure::security.vault.sapi.client.secret')
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[output application/json
+---
+{
+	"secretIdList" : vars.targetResponse.Targets.*SecretId[0]
+}]]]></http:query-params>
+		</http:request>
+		<ee:transform doc:name="Transform to Basic Authentication Format" doc:id="957a7109-5584-4424-8b4d-3b7132e7e7cb" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="authDetails" ><![CDATA[%dw 2.0
+import * from dw::core::Binaries
+
+output text/plain
+var username = vars.securityVaultResponse.SecretData.*username[0]
+var password = vars.securityVaultResponse.SecretData.*password[0]
+---
+"Basic " ++ toBase64(password)
+//"Basic " ++ toBase64(username ++ ":" ++ password)]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Log Flow End" doc:id="944de137-a11a-491d-b07a-3b26607a33f7" message='#[flow.name ++ " ended."]'/>	
+
+</flow>
+</mule>

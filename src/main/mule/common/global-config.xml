@@ -2,7 +2,6 @@
 <mule xmlns:db="http://www.mulesoft.org/schema/mule/db"
 	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:error-handler-plugin="http://www.mulesoft.org/schema/mule/error-handler-plugin" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd  http://www.mulesoft.org/schema/mule/error-handler-plugin http://www.mulesoft.org/schema/mule/error-handler-plugin/current/mule-error-handler-plugin.xsd http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd">
-    <apikit:config name="castellan-bcr-sapi-config" api="resource::a0e7b53e-31b5-420c-833b-884b8bab173e:castellan-bcr-sapi:1.0.0:raml:zip:castellan-bcr-sapi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
     <http:listener-config name="HTTPS_Listener_Config">
         <http:listener-connection host="${secure::https.listener.host}" port="${secure::https.listener.port}" protocol="HTTPS">
             <tls:context>              
@@ -12,4 +11,20 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
     </http:listener-config>
     <api-gateway:autodiscovery apiId="${api.autodiscovery.id}" doc:name="API Autodiscovery" doc:id="424ac292-35fb-4809-85b0-e4c29d7999bc" flowRef="castellan-bcr-sapi-main" ignoreBasePath="true" />
     <global-property doc:name="Global Property" doc:id="bf05567f-8393-491f-a0a9-b82633280321" name="api.autodiscovery.id" value="${secure::api.autodiscovery.id}" />
+    <http:request-config name="HTTPS_DB_Configuration_Sapi" doc:name="HTTP Request configuration" doc:id="3946625c-c8d0-4c96-bd68-514e8f125458" responseTimeout="${secure::db.configuration.sapi.request.response.timeout}" basePath="/${secure::db.configuration.sapi.path}">	
+		<http:request-connection connectionIdleTimeout="${secure::db.configuration.sapi.request.response.timeout}" host="${secure::db.configuration.sapi.host}" port="${secure::db.configuration.sapi.port}" protocol="HTTPS">
+			<reconnection >
+				<reconnect-forever />
+			</reconnection>
+		</http:request-connection>
+		<expiration-policy maxIdleTime="24" timeUnit="HOURS" />
+	</http:request-config>
+	<http:request-config name="HTTPS_Security_Vault_Sapi" doc:name="HTTP Request configuration" doc:id="017f305b-5a3f-4551-b79f-062c6c9cf2c7" responseTimeout="${secure::security.vault.sapi.request.response.timeout}" basePath="/${secure::security.vault.sapi.path}">	
+		<http:request-connection connectionIdleTimeout="${secure::security.vault.sapi.request.response.timeout}" host="${secure::security.vault.sapi.host}" port="${secure::security.vault.sapi.port}" protocol="HTTPS">
+			<reconnection >
+				<reconnect-forever />
+			</reconnection>
+		</http:request-connection>
+		<expiration-policy maxIdleTime="24" timeUnit="HOURS" />
+	</http:request-config>
 </mule>

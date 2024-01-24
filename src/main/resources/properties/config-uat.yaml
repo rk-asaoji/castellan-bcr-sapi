@@ -22,3 +22,24 @@ https:
     timeout:
       connection-idle: "500000"
       response: "5000"  
+      
+db.configuration.sapi:  
+    host: "uat-db-configuration-sapi.us-e1.cloudhub.io"
+    port: "443"
+    request.response.timeout: "10000"
+    path: "api/v1.0"    
+    client.id: "![2dhjgaftn3+FINlKE74a6NNV3SDNLZgDyP8+sYb5hJrfxqeaYOEguXUgpvI9OV/U]"
+    client.secret: "![exMKZxC/8NJDeKOUO02TEV3HE+NwNSZZVERuxaKg865rXWQ5RFP46KBXkLjXgPgo]"  
+    
+security.vault.sapi:
+    host: "uat-security-vault-sapi.us-e1.cloudhub.io"
+    port: "443"
+    request.response.timeout: "10000"
+    path: "api/v1.0"    
+    client.id: "![2dhjgaftn3+FINlKE74a6NNV3SDNLZgDyP8+sYb5hJrfxqeaYOEguXUgpvI9OV/U]"
+    client.secret: "![exMKZxC/8NJDeKOUO02TEV3HE+NwNSZZVERuxaKg865rXWQ5RFP46KBXkLjXgPgo]" 
+    
+castellan.endpoints:
+  imports.v1: "https://example.test-11.castellan-test.com/import/api/V1/api_upload"  
+  imports.v2: "https://example.test-11.castellan-test.com/import/api/V2/api_upload"   
+  request.response.timeout: "10000"                

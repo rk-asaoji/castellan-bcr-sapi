@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:module-error-handler-plugin="http://www.mulesoft.org/schema/mule/module-error-handler-plugin" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/module-error-handler-plugin http://www.mulesoft.org/schema/mule/module-error-handler-plugin/current/mule-module-error-handler-plugin.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+<!--     <http:request-config name="HTTPS_Request_Assurance_CM_Web_Service" doc:name="HTTP Request configuration" doc:id="3844b326-e8d0-43c0-8e32-b06e38c95735" basePath="${secure::assuranceCM.basepath}" >
+		<http:request-connection protocol="HTTPS" host="${secure::assuranceCM.host}" >
+			<http:authentication >
+				<http:basic-authentication username="#[vars.securityVaultResponse.SecretData.*username[0]]" password="#[vars.securityVaultResponse.SecretData.*password[0]]" />
+			</http:authentication>
+		</http:request-connection>
+	</http:request-config> -->
+	<flow name="post-imports-details-flow" doc:id="335e0b1f-b86c-4a1b-b9e4-a3804e304c52">
+		<logger level="INFO" doc:name="Log Flow Start" doc:id="655fc396-c3ab-4bb6-8f06-400828491307" message='#[flow.name ++ " started."]'/>
+		<flow-ref doc:name="get-configuration-db-and-security-vault-details" doc:id="dcc9aae8-b7a8-42f6-8bbc-6ca4c70be211" name="get-configuration-db-and-security-vault-details-flow"/>
+		<ee:transform doc:name="Request Payload" doc:id="5dd9e6fd-e860-4b26-90ad-7c51b19afbbc" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="requestPayload" ><![CDATA[%dw 2.0   
+output multipart/form-data
+---
+{
+	"parts": {
+		"Key1": {
+			"headers": {
+				"Content-Disposition": {
+					"name": "Key1",
+					"subtype": "form-data"
+				}
+			},
+			"content": "true"
+		},
+		"File1": {
+			"headers": {
+				"Content-Disposition": {
+				    "module": "InternalContact",
+					"import_template_id": 4,
+					"name": "File1",
+					"filename": "file1.csv",
+					"subtype": "form-data"
+				},
+				"Content-Type": "application/csv"
+			},
+			"content": payload
+		}
+	}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<http:request method="POST" doc:name="Request Imports Details" doc:id="1e211042-1a56-4069-952d-03601322ca16" url="${secure::castellan.endpoints.imports.v1}" responseTimeout="${secure::castellan.endpoints.request.response.timeout}">
+			<http:body ><![CDATA[#[vars.requestPayload]]]></http:body>
+			<http:headers ><![CDATA[#[output application/json
+---
+{
+	"cache-control": "no-cache",
+	"Authorization" : "Token token=" ++ vars.authDetails
+}]]]></http:headers>
+		</http:request>
+		<logger level="INFO" doc:name="Log Imports Response" doc:id="c635d193-60b8-434a-9421-bff27f72cdd2" message="Imports Response : #[payload]"/>
+		<logger level="INFO" doc:name="Log Imports Status Code" doc:id="257cf2a1-8ca2-4fd5-827a-125a7353e36d" message="Imports Response Status Code :  #[attributes.statusCode]  and Reason Phrase :  #[attributes.reasonPhrase]"/>
+		<ee:transform doc:name="Imports Status Code" doc:id="f2a90af5-c27d-47b6-b0fb-c98494004156">
+			<ee:message>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="httpStatus" ><![CDATA[%dw 2.0
+output application/json
+---
+attributes.statusCode]]></ee:set-variable>
+			</ee:variables>
+		
+</ee:transform>
+		<ee:transform doc:name="Imports Response" doc:id="47c71343-a07b-4ada-bb16-a1ce1266ea81">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  success: true,
+  subscriptionId: vars.subscriptionId
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Log Flow End" doc:id="944de137-a11a-491d-b07a-3b26607a33f7" message='#[flow.name ++ " ended."]'/>
+	
+
+</flow>
+</mule>

@@ -3,13 +3,13 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>76f99b66-e0ae-4ed0-b927-bdd4aea4402c</groupId>
-	<artifactId>sit-eu-castellan-bcr-sapi</artifactId>
+	<artifactId>castellan-bcr-sapi</artifactId>
 	<version>1.0.13</version>
 	<packaging>mule-application</packaging>
 
-	<name>sit-eu-castellan-bcr-sapi-1.0.13-mule-application</name>
+	<name>castellan-bcr-sapi-1.0.13-mule-application</name>
 
-	<description>sit-eu-castellan-bcr-sapi</description>
+	<description>castellan-bcr-sapi</description>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -92,13 +92,6 @@
 			<classifier>mule-plugin</classifier>
 		</dependency>
 		<dependency>
-			<groupId>a0e7b53e-31b5-420c-833b-884b8bab173e</groupId>
-			<artifactId>castellan-bcr-sapi</artifactId>
-			<version>1.0.0</version>
-			<classifier>raml</classifier>
-			<type>zip</type>
-		</dependency>
-		<dependency>
 			<groupId>org.mule.connectors</groupId>
 			<artifactId>mule-http-connector</artifactId>
 			<version>1.9.0</version>
@@ -121,6 +114,13 @@
 			<artifactId>mule-sockets-connector</artifactId>
 			<version>1.2.4</version>
 			<classifier>mule-plugin</classifier>
+		</dependency>
+		<dependency>
+			<groupId>a0e7b53e-31b5-420c-833b-884b8bab173e</groupId>
+			<artifactId>castellan-bcr-sapi</artifactId>
+			<version>1.0.2</version>
+			<classifier>raml</classifier>
+			<type>zip</type>
 		</dependency>
 	</dependencies>
 	<distributionManagement>

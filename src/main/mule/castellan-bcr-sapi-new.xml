@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd ">
+    <http:listener-config name="castellan-bcr-sapi-httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="8081" />
+    </http:listener-config>
+    <apikit:config name="castellan-bcr-sapi-config" api="resource::a0e7b53e-31b5-420c-833b-884b8bab173e:castellan-bcr-sapi:1.0.2:raml:zip:castellan-bcr-sapi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <flow name="castellan-bcr-sapi-main">
+        <http:listener config-ref="HTTPS_Listener_Config" path="/${secure::api.path}/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="castellan-bcr-sapi-config"/>
+        <error-handler>
+            <on-error-propagate enableNotifications="true" logException="true">
+				<flow-ref doc:name="error-handler-subflow" doc:id="80ab56c1-1956-486e-bf9d-4bcd8c4d51ac" name="error-handler-subflow" />
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <sub-flow name="error-handler-subflow" doc:id="67b1eed4-d6bb-4af4-bae8-3ee48c4a8472" doc:description="This flow can be re-used across different flows to create an error payload and log an exception">
+		<set-variable value="#[attributes.httpStatus]" doc:name="httpStatus" doc:id="2e4cde11-19dc-43b3-b331-391db3eca682" variableName="httpStatus" />
+	</sub-flow>
+	<flow name="get:\health:castellan-bcr-sapi-config">
+		<flow-ref doc:name="health check flow" doc:id="2b48a2be-c4b1-4275-b6e6-9b44035658e2" name="get-health-check-flow" />
+    </flow>
+    <flow name="post:\imports:application\json:castellan-bcr-sapi-config">
+		<flow-ref doc:name="imports details flow" doc:id="965359ff-ff28-4ba9-abd9-544738d3d966" name="post-imports-details-flow" />
+    </flow>
+    <flow name="post:\importsV2:application\json:castellan-bcr-sapi-config">
+		<flow-ref doc:name="importsV2 details flow" doc:id="966fa4be-52da-404e-ad80-bf2a07873510" name="post-importsV2-details-flow" />
+    </flow>
+</mule>
